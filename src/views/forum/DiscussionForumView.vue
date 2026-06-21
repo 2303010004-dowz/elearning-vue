@@ -18,7 +18,6 @@
           <h2 class="text-lg font-bold text-gray-800">{{ forum.className }}</h2>
           <p class="text-sm text-gray-600 mb-2">{{ forum.teacher }}</p>
           <p class="text-gray-700 text-sm mb-4">{{ forum.latestMessage }}</p>
-
           <div class="flex items-center gap-4 text-xs text-gray-500 font-medium">
             <span>{{ forum.date }} · {{ forum.time }}</span>
             <span class="ml-auto text-gray-800 font-bold">{{ forum.repliesCount }} Balasan</span>
