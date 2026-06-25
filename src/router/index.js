@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Lazy Loading Views (Sesuai Struktur Folder Anda)
+// Lazy Loading Views
 const LoginView = () => import('../views/auth/LoginView.vue')
 const RegisterView = () => import('../views/auth/RegisterView.vue')
 const ForgotPasswordView = () => import('../views/auth/ForgotPasswordView.vue')
@@ -15,6 +15,7 @@ const ClassDetailView = () => import('../views/classes/ClassDetailView.vue')
 
 const TeacherTaskView = () => import('../views/tasks/TeacherTaskView.vue')
 const StudentTaskView = () => import('../views/tasks/StudentTaskView.vue')
+const CreateTaskView = () => import('../views/tasks/CreateTaskView.vue')
 
 const DiscussionForumView = () => import('../views/forum/DiscussionForumView.vue')
 const ProfileView = () => import('../views/profile/ProfileView.vue')
@@ -29,13 +30,25 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-class', name: 'student-class', component: StudentClassView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-tasks', name: 'student-tasks', component: StudentTaskView, meta: { requiresAuth: true, role: 'siswa' } },
-  { path: '/class/bahasa-indonesia', name: 'bahasa-indonesia', component: ClassDetailView, meta: { requiresAuth: true, role: 'siswa' } },
+  
+  { 
+    path: '/class/:className', 
+    name: 'class-detail', 
+    component: ClassDetailView, 
+    meta: { requiresAuth: true, role: 'siswa' } 
+  },
   
   // --- PROTECTED ROUTES (GURU) ---
   { path: '/dashboard-guru', name: 'dashboard-guru', component: DashboardGuruView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class', name: 'teacher-class', component: TeacherClassView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class/create', name: 'create-class', component: CreateClassView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/grading', name: 'grading', component: TeacherTaskView, meta: { requiresAuth: true, role: 'guru' } },
+  { 
+    path: '/create-task', 
+    name: 'create-task', 
+    component: CreateTaskView,
+    meta: { requiresAuth: true, role: 'guru' } 
+  },
 
   // --- SHARED ROUTES ---
   { path: '/discussion-forum', name: 'discussion-forum', component: DiscussionForumView, meta: { requiresAuth: true } },

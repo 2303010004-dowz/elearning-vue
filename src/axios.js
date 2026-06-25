@@ -1,7 +1,7 @@
 // src/axios.js
 import axios from 'axios';
 
-const BACKEND_IP = '192.168.1.15:8000';
+const BACKEND_IP = '192.168.1.10:8000';
 const apiClient = axios.create({
   baseURL: `http://${BACKEND_IP}/api`,
   headers: {
@@ -10,7 +10,6 @@ const apiClient = axios.create({
   }
 });
 
-// Axios Interceptor untuk menyematkan Token JWT otomatis
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token_jwt');

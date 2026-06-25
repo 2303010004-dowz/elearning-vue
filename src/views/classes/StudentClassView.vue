@@ -6,7 +6,7 @@
       <div 
         v-for="kelas in kelasList" 
         :key="kelas.id" 
-        @click="openClass(kelas.id)" 
+        @click="openClass(kelas.slug)" 
         class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm flex flex-col cursor-pointer hover:bg-gray-300 transition-all duration-200"
       >
         <div class="bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded w-fit mb-4">
@@ -31,13 +31,16 @@ import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 const router = useRouter()
 const kelasList = ref([])
 
-const openClass = (id) => router.push(`/class-detail/${id}`)
+// Menggunakan nama rute 'class-detail' dan mengirim slug sebagai parameter
+const openClass = (slug) => {
+  router.push({ name: 'class-detail', params: { className: slug } })
+}
 
 onMounted(() => {
   kelasList.value = [
-    { id: 1, kode: 'MTK', nama: 'Bahasa Indonesia - 7A', guru: 'Budi, S.Pd', materi: 1, tugas: 'Tidak ada tugas' },
-    { id: 2, kode: 'BIN', nama: 'Bahasa Inggris - 7A', guru: 'Lula Sopianti, S.Pd', materi: 2, tugas: 'Makalah Bahasa Indonesia' },
-    { id: 3, kode: 'BIN', nama: 'Bahasa Sunda - 7A', guru: 'Neneng Kurniasih, S.Pd', materi: 1, tugas: 'Tidak ada tugas' }
+    { id: 1, kode: 'MTK', nama: 'Bahasa Indonesia - 7A', guru: 'Budi, S.Pd', materi: 1, tugas: 'Tidak ada tugas', slug: 'bahasa-indonesia' },
+    { id: 2, kode: 'BIG', nama: 'Bahasa Inggris - 7A', guru: 'Lula Sopianti, S.Pd', materi: 2, tugas: 'Makalah Bahasa Indonesia', slug: 'bahasa-inggris' },
+    { id: 3, kode: 'BSU', nama: 'Bahasa Sunda - 7A', guru: 'Neneng Kurniasih, S.Pd', materi: 1, tugas: 'Tidak ada tugas', slug: 'bahasa-sunda' }
   ]
 })
 </script>

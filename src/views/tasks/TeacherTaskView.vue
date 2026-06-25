@@ -2,7 +2,10 @@
   <DashboardLayout>
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold text-gray-800">Tugas</h1>
-      <button class="bg-[#4A86A8] hover:bg-[#3d718e] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+      <button 
+        @click="router.push({ name: 'create-task' })" 
+        class="bg-[#4A86A8] hover:bg-[#3d718e] text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+      >
         + Buat Tugas
       </button>
     </div>
@@ -50,5 +53,8 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
+
+const router = useRouter()
 </script>
