@@ -154,7 +154,7 @@ const fetchDashboardData = async () => {
     userName.value = localStorage.getItem('user_name') || 'Siswa'
     
     // Tembak GET ke /kelas/join sesuai instruksi teman backend kamu
-    const res = await apiClient.get('/kelas/join')
+    const res = await apiClient.get('/kelas/joined')
     
     // Cek struktur data yang dikembalikan Lumen
     if (Array.isArray(res.data)) {
@@ -168,7 +168,7 @@ const fetchDashboardData = async () => {
     
     console.log("Daftar Kelas Siswa:", res.data)
   } catch (err) {
-    console.error('Gagal mengambil daftar kelas dari /kelas/join:', err)
+    console.error('Gagal mengambil daftar kelas dari /kelas/joined:', err)
   }
 }
 

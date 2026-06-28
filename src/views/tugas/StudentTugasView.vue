@@ -1,50 +1,77 @@
 <template>
   <DashboardLayout>
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Tugas</h1>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm">
-        <h3 class="text-4xl font-bold text-gray-800">2</h3>
-        <p class="text-gray-600 font-medium text-sm mt-1">Total Tugas</p>
-      </div>
-      <div class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm">
-        <h3 class="text-4xl font-bold text-red-600">1</h3>
-        <p class="text-gray-600 font-medium text-sm mt-1">Tugas Belum</p>
-      </div>
-      <div class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm">
-        <h3 class="text-4xl font-bold text-green-700">1</h3>
-        <p class="text-gray-600 font-medium text-sm mt-1">Tugas Sudah</p>
-      </div>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Tugas Saya</h1>
     </div>
 
-    <h2 class="text-lg font-bold text-gray-800 mb-4">Semua Tugas</h2>
-    <div class="space-y-4">
-      <div v-for="task in studentTasks" :key="task.id" class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm flex flex-col">
-        <div class="flex justify-between items-start">
-          <div>
-            <h3 class="font-bold text-lg text-gray-800">{{ task.title }}</h3>
-            <p class="text-sm text-gray-600">{{ task.classAndSubject }} · {{ task.teacher }}</p>
-          </div>
-          <span :class="task.isSubmitted ? 'bg-gray-400 text-gray-700' : 'bg-[#4A86A8] text-white'" class="px-3 py-1 rounded-full text-xs font-bold">
-            {{ task.isSubmitted ? 'Dikumpulkan' : task.deadlineInfo }}
-          </span>
+    <div v-if="daftarTugas.length === 0" class="w-100 p-6 text-center bg-gray-100 rounded-2xl">
+      <p class="text-gray-500 italic mb-0">Hore! Belum ada tugas saat ini.</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div 
+        v-for="tugas in daftarTugas" 
+        :key="tugas.id" 
+        @click="openTugas(tugas.id)" 
+        class="bg-[#D9D9D9] p-6 rounded-2xl shadow-sm flex flex-col cursor-pointer hover:bg-gray-300 transition-all duration-200"
+      >
+        <div 
+          class="text-xs font-bold px-3 py-1 rounded w-fit mb-4 text-white"
+          :class="tugas.status === 'Selesai' ? 'bg-green-600' : 'bg-red-600'"
+        >
+          {{ tugas.status || 'Belum Dikerjakan' }}
         </div>
-        <button v-if="!task.isSubmitted" @click="submitTaskAction(task)" class="mt-6 bg-gray-400 hover:bg-gray-500 text-gray-800 font-medium px-6 py-2 rounded-lg w-fit text-sm">
-          Kumpulkan
-        </button>
+        
+        <h2 class="text-lg font-bold text-gray-800 mb-1">{{ tugas.judul_tugas }}</h2>
+        <p class="text-sm text-gray-600 mb-6 truncate">{{ tugas.deskripsi || 'Tidak ada deskripsi.' }}</p>
+        
+        <div class="mt-auto border-t border-gray-400 pt-4 text-sm text-gray-700 space-y-2">
+          <p>📚 Kelas: <span class="font-bold">{{ tugas.nama_kelas || '-' }}</span></p>
+          <p class="text-red-600 font-medium">
+            ⏰ Tenggat: {{ tugas.deadline ? new Date(tugas.deadline).toLocaleDateString('id-ID') : '-' }}
+          </p>
+        </div>
       </div>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
+import apiClient from '@/axios.js' 
 
-const studentTasks = ref([
-  { id: 1, title: 'Makalah Teks Deskripsi', classAndSubject: 'Bahasa Indonesia - 7A', teacher: 'Budi S.Pd', deadlineInfo: '10 Apr · 9 hari lagi', isSubmitted: false },
-  { id: 2, title: 'Aksara Sunda', classAndSubject: 'Bahasa Sunda - 7A', teacher: 'Neneng Kurniasih S.Pd', deadlineInfo: '', isSubmitted: true }
-])
+const router = useRouter()
 
-const submitTaskAction = (task) => alert(`Mengunggah: ${task.title}`)
+// State penampung data tugas
+const daftarTugas = ref([])
+
+// Navigasi masuk ke detail/mengerjakan tugas
+const openTugas = (id) => {
+  // Pastikan di router kamu ada name 'task-detail' atau sesuaikan namanya
+  router.push({ name: 'student-tugas', params: { id: id } }) 
+}
+
+// Ambil data daftar tugas dari API Lumen
+const fetchTugasData = async () => {
+  try {
+    // INFO UNTUK TEMANMU: Pastikan endpoint URL di bawah ini sesuai dengan yang dibuat di Lumen
+    const res = await apiClient.get('/tugas') 
+    
+    if (res.data && res.data.data) {
+      daftarTugas.value = res.data.data
+    } else if (Array.isArray(res.data)) {
+      daftarTugas.value = res.data
+    } else {
+      daftarTugas.value = []
+    }
+  } catch (err) {
+    console.error('Gagal memuat data tugas dari backend:', err)
+  }
+}
+
+onMounted(() => {
+  fetchTugasData()
+})
 </script>

@@ -5,7 +5,7 @@ export const kelasService = {
   buatKelas: (data) => apiClient.post('/kelas', data),
   
   // Siswa bergabung ke kelas
-  joinKelas: (data) => apiClient.post('/kelas/join', data),
+  joinKelas: (data) => apiClient.post('/kelas/joined', data),
   
   // Siswa keluar dari kelas
   leaveKelas: (id) => apiClient.delete(`/kelas/${id}/leave`),
