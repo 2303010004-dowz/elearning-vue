@@ -2,6 +2,7 @@
   <div class="flex min-h-screen items-center justify-center bg-[#F3F3F3] p-4 font-sans">
     <div class="flex w-full max-w-5xl flex-col items-center justify-between gap-8 md:flex-row">
       
+      <!-- Sisi Kiri: Form Login -->
       <div class="w-full px-4 md:w-1/2 md:px-8">
         <div class="mb-10 flex items-center justify-center gap-3 md:justify-start">
           <svg class="h-10 w-10 text-[#3B6A96]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -11,6 +12,7 @@
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-6">
+          <!-- Input Email / NIS -->
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-5 text-gray-500">
               <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
@@ -26,6 +28,7 @@
             />
           </div>
 
+          <!-- Input Password -->
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-5 text-gray-500">
               <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
@@ -48,10 +51,12 @@
             </button>
           </div>
 
-          <div v-if="status.message" :class="`text-center text-sm ${status.isError ? 'text-red-500' : 'text-green-600'}`">
+          <!-- Status Pesan Error / Sukses -->
+          <div v-if="status.message" :class="`text-center text-sm font-medium ${status.isError ? 'text-red-500' : 'text-green-600'}`">
             {{ status.message }}
           </div>
 
+          <!-- Tombol Submit -->
           <button 
             type="submit" 
             :disabled="status.isLoading"
@@ -62,6 +67,7 @@
         </form>
       </div>
 
+      <!-- Sisi Kanan: Ilustrasi Gambar -->
       <div class="hidden w-full justify-center md:flex md:w-1/2">
         <div class="relative h-[480px] w-[420px] overflow-hidden rounded-[40px] bg-[#B0C4DE]">
           <img src="@/assets/siswa.png" class="absolute bottom-0 left-1/2 h-[95%] -translate-x-1/2 object-contain" />
@@ -97,16 +103,22 @@ const handleLogin = async () => {
   try {
     const response = await apiClient.post('/login', form);
 
-    // 1. Ambil token dan role dari respon backend
-    const { token, role } = response.data; 
+    // 1. Ambil token, role, dan user dari JSON response Lumen
+    const { token, role, user } = response.data; 
     
-    // 2. Simpan ke localStorage
+    // 2. Simpan kredensial login ke localStorage
     localStorage.setItem('token_jwt', token);
-    localStorage.setItem('user_role', role); // Simpan role di sini
+    localStorage.setItem('user_role', role);
+    localStorage.setItem('user_nomor_induk', user?.nomor_induk || '');
+    localStorage.setItem('user_email', form.email); 
+    
+    // PERBAIKAN: Menyesuaikan key data nama 'nama_lengkap' sesuai kiriman controller Lumen teman Anda
+    const namaAsli = user?.nama_lengkap || 'User Terlogin';
+    localStorage.setItem('user_name', namaAsli);
     
     status.message = 'Login Berhasil! Mengalihkan...';
     
-    // 3. Arahkan berdasarkan role
+    // 3. Arahkan halaman berdasarkan role user setelah jeda singkat
     setTimeout(() => {
       if (role === 'guru') {
         router.push('/dashboard-guru');
@@ -123,3 +135,6 @@ const handleLogin = async () => {
   }
 };
 </script>
+
+<style scoped>
+</style>

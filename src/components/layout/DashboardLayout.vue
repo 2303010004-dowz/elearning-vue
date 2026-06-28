@@ -1,14 +1,21 @@
 <template>
   <div class="flex min-h-screen bg-[#F3F3F3] font-sans text-gray-800">
-    <aside class="w-64 bg-[#E0E0E0] shadow-sm flex flex-col justify-between shrink-0">
+    
+    <!-- Sidebar / Aside Component -->
+    <aside 
+      v-if="!hideSidebar" 
+      class="w-64 bg-[#E0E0E0] shadow-sm flex flex-col justify-between shrink-0"
+    >
       <div>
+        <!-- App Logo Header -->
         <div class="flex items-center gap-2 px-6 bg-[#4A86A8] text-white font-bold text-xl h-16">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89l-.06-.582a9.956 9.956 0 010-3.18l.06-.583a1 1 0 01.89-.89c.115-.011.233-.017.35-.017zm13.38 0c.117 0 .235.006.35.017a1 1 0 01.89.89l.06.582a9.956 9.956 0 010 3.18l-.06.583a1 1 0 01-.89.89 8.969 8.969 0 00-1.05v-4.101l1.69-.724z" />
+            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89l-.06-.582a9.956 9.956 0 010-3.18l.06-.583a1 1 0 01.89-.89c.115-.011.233-.017.35-.017zm13.38 0c.117 0 .235.006.35.017a1 1 0 01.89.89l.06.582a9.956 9.956 0 010 3.18l-.06-.583a1 1 0 01-.89.89 8.969 8.969 0 00-1.05v-4.101l1.69-.724z" />
           </svg>
           EduLearn
         </div>
 
+        <!-- Navigation Links -->
         <nav class="mt-6 space-y-1 px-3">
           <RouterLink 
             :to="homePath" 
@@ -27,7 +34,7 @@
           </RouterLink>
 
           <RouterLink 
-            :to="isGuru ? '/grading' : '/student-tasks'" 
+            :to="isGuru ? '/grading' : '/student-tugas'" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -52,6 +59,7 @@
         </nav>
       </div>
 
+      <!-- Footer Menu Button (Logout) -->
       <div class="p-4 border-t border-gray-300">
         <button 
           @click="handleLogout" 
@@ -63,23 +71,28 @@
       </div>
     </aside>
 
+    <!-- Content Area Wrapper -->
     <div class="flex-1 flex flex-col">
-    <header class="flex items-center justify-end bg-[#4A86A8] px-8 h-16 shadow-sm">
-        
+      <!-- Navbar / Topbar Component -->
+      <header 
+        v-if="!hideSidebar" 
+        class="flex items-center justify-end bg-[#4A86A8] px-8 h-16 shadow-sm"
+      >
         <RouterLink 
-        v-if="!isProfilePage" 
-        to="/profile" 
-        class="flex h-9 w-9 items-center justify-center rounded-full bg-[#D9D9D9] font-bold text-gray-700 cursor-pointer hover:bg-gray-200 transition"
+          v-if="!isProfilePage" 
+          to="/profile" 
+          class="flex h-9 w-9 items-center justify-center rounded-full bg-[#D9D9D9] font-bold text-gray-700 cursor-pointer hover:bg-gray-200 transition"
         >
-        {{ userInitial }}
+          {{ userInitial }}
         </RouterLink>
-        
-    </header>
-    
-    <main class="flex-1 p-8 overflow-y-auto">
+      </header>
+      
+      <!-- Main Content Slot Injection -->
+      <main :class="['flex-1 overflow-y-auto', hideSidebar ? 'p-0' : 'p-8']">
         <slot />
-    </main>
+      </main>
     </div>
+
   </div>
 </template>
 
@@ -88,12 +101,18 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '@/axios'
 
+defineProps({
+  hideSidebar: {
+    type: Boolean,
+    default: false 
+  }
+})
+
 const route = useRoute()
 const role = localStorage.getItem('user_role')
 const userName = localStorage.getItem('user_name') || 'User'
 
 const isProfilePage = computed(() => route.path === '/profile')
-
 const isGuru = computed(() => role === 'guru')
 const homePath = computed(() => isGuru.value ? '/dashboard-guru' : '/dashboard')
 const userInitial = computed(() => userName.charAt(0).toUpperCase())

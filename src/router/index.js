@@ -11,44 +11,40 @@ const DashboardGuruView = () => import('../views/dashboard/DashboardGuruView.vue
 const TeacherClassView = () => import('../views/classes/TeacherClassView.vue')
 const StudentClassView = () => import('../views/classes/StudentClassView.vue')
 const CreateClassView = () => import('../views/classes/CreateClassView.vue')
-const ClassDetailView = () => import('../views/classes/ClassDetailView.vue')
 
-const TeacherTaskView = () => import('../views/tasks/TeacherTaskView.vue')
-const StudentTaskView = () => import('../views/tasks/StudentTaskView.vue')
-const CreateTaskView = () => import('../views/tasks/CreateTaskView.vue')
+const TeacherTugasView = () => import('../views/tugas/TeacherTugasView.vue')
+const StudentTugasView = () => import('../views/tugas/StudentTugasView.vue')
+const CreateTugasView = () => import('../views/tugas/CreateTugasView.vue')
+const EditTugasView = () => import('../views/tugas/EditTugasView.vue')
+const NilaiTugasView = () => import('../views/tugas/NilaiTugasView.vue')
 
 const DiscussionForumView = () => import('../views/forum/DiscussionForumView.vue')
 const ProfileView = () => import('../views/profile/ProfileView.vue')
 
 const routes = [
+  // --- ROOT REDIRECT ---
+  { path: '/', redirect: '/login' },
+
   // --- AUTH ROUTES ---
-  { path: '/', name: 'login', component: LoginView },
+  { path: '/login', name: 'login', component: LoginView },
   { path: '/register', name: 'register', component: RegisterView },
   { path: '/forgot-password', name: 'forgot-password', component: ForgotPasswordView },
 
   // --- PROTECTED ROUTES (SISWA) ---
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-class', name: 'student-class', component: StudentClassView, meta: { requiresAuth: true, role: 'siswa' } },
-  { path: '/student-tasks', name: 'student-tasks', component: StudentTaskView, meta: { requiresAuth: true, role: 'siswa' } },
-  
-  { 
-    path: '/class/:className', 
-    name: 'class-detail', 
-    component: ClassDetailView, 
-    meta: { requiresAuth: true, role: 'siswa' } 
-  },
-  
+  { path: '/student-tugas', name: 'student-tugas', component: StudentTugasView, meta: { requiresAuth: true, role: 'siswa' } },
+
   // --- PROTECTED ROUTES (GURU) ---
   { path: '/dashboard-guru', name: 'dashboard-guru', component: DashboardGuruView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class', name: 'teacher-class', component: TeacherClassView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class/create', name: 'create-class', component: CreateClassView, meta: { requiresAuth: true, role: 'guru' } },
-  { path: '/grading', name: 'grading', component: TeacherTaskView, meta: { requiresAuth: true, role: 'guru' } },
-  { 
-    path: '/create-task', 
-    name: 'create-task', 
-    component: CreateTaskView,
-    meta: { requiresAuth: true, role: 'guru' } 
-  },
+  
+  // Tugas Guru
+  { path: '/grading', name: 'grading', component: TeacherTugasView, meta: { requiresAuth: true, role: 'guru' } },
+  { path: '/create-tugas', name: 'create-tugas', component: CreateTugasView, meta: { requiresAuth: true, role: 'guru' } },
+  { path: '/tugas/:id/edit', name: 'edit-tugas', component: EditTugasView, meta: { requiresAuth: true, role: 'guru' } },
+  { path: '/tugas/:id/nilai', name: 'nilai-tugas', component: NilaiTugasView, meta: { requiresAuth: true, role: 'guru' } },
 
   // --- SHARED ROUTES ---
   { path: '/discussion-forum', name: 'discussion-forum', component: DiscussionForumView, meta: { requiresAuth: true } },

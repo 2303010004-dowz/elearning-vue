@@ -1,7 +1,8 @@
 <template>
   <DashboardLayout>
     <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-800">Selamat datang, Pak Budi</h1>
+      <!-- PERBAIKAN: Mengubah teks statis menjadi dinamis mengikuti nama guru yang login -->
+      <h1 class="text-2xl font-bold text-gray-800">Selamat datang, {{ namaGuru }}</h1>
       <p class="text-gray-600 text-sm">Ringkasan Aktivitas kelas hari ini</p>
     </div>
 
@@ -59,6 +60,8 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
+import { ref, onMounted } from 'vue'
 
+const namaGuru = ref(localStorage.getItem('user_name') || 'Guru')
 const router = useRouter()
 </script>
