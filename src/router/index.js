@@ -11,6 +11,7 @@ const DashboardGuruView = () => import('../views/dashboard/DashboardGuruView.vue
 const TeacherClassView = () => import('../views/classes/TeacherClassView.vue')
 const StudentClassView = () => import('../views/classes/StudentClassView.vue')
 const CreateClassView = () => import('../views/classes/CreateClassView.vue')
+const ClassDetailView = () => import('../views/classes/ClassDetailView.vue')
 
 const TeacherTugasView = () => import('../views/tugas/TeacherTugasView.vue')
 const StudentTugasView = () => import('../views/tugas/StudentTugasView.vue')
@@ -34,7 +35,8 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-class', name: 'student-class', component: StudentClassView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-tugas', name: 'student-tugas', component: StudentTugasView, meta: { requiresAuth: true, role: 'siswa' } },
-
+  { 
+  path: '/class-detail/:classId',name: 'class-detail', component: ClassDetailView,meta: { requiresAuth: true, role: 'siswa' } },
   // --- PROTECTED ROUTES (GURU) ---
   { path: '/dashboard-guru', name: 'dashboard-guru', component: DashboardGuruView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class', name: 'teacher-class', component: TeacherClassView, meta: { requiresAuth: true, role: 'guru' } },

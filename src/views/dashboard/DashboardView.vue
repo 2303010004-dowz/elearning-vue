@@ -1,6 +1,5 @@
 <template>
   <DashboardLayout>
-    <!-- Notifikasi Toast Melayang (Kanan Atas) -->
     <div class="fixed top-5 right-5 z-[60] space-y-2 pointer-events-none">
       <Transition name="toast">
         <div 
@@ -16,13 +15,11 @@
       </Transition>
     </div>
 
-    <!-- Header Dashboard -->
     <div class="mb-6 flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Selamat datang, {{ userName }}</h1>
         <p class="text-gray-600 text-sm">Ringkasan Aktivitas kelas hari ini</p>
       </div>
-      <!-- Tombol Gabung Kelas -->
       <button 
         @click="showJoinModal = true"
         class="bg-gray-800 text-white px-5 py-2 rounded-xl font-bold hover:bg-gray-700 transition shadow-sm"
@@ -31,7 +28,6 @@
       </button>
     </div>
 
-    <!-- Ringkasan Statistik -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div 
         @click="router.push({ name: 'student-class' })" 
@@ -42,7 +38,7 @@
       </div>
       
       <div 
-        @click="router.push({ name: 'student-tasks' })" 
+        @click="router.push({ name: 'student-tugas' })" 
         class="cursor-pointer p-6 rounded-2xl bg-[#D9D9D9] hover:bg-[#CECECE] shadow-sm transition h-32 flex flex-col justify-center"
       >
         <h3 class="text-4xl font-bold text-red-600">{{ tugasBelum.length }}</h3>
@@ -50,43 +46,47 @@
       </div>
     </div>
 
-    <!-- Grid Konten Utama -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Daftar Kelas -->
       <div class="bg-[#D9D9D9] rounded-2xl p-6 shadow-sm">
         <h2 class="text-lg font-bold text-gray-800 mb-4">Kelas saya</h2>
         <div class="space-y-4">
           <div 
             v-for="kelas in kelasDiikuti" 
             :key="kelas.id"
-            @click="router.push(`/class/${kelas.slug}`)" 
+            @click="router.push({ name: 'class-detail', params: { classId: kelas.id } })" 
             class="cursor-pointer bg-[#F3F3F3] hover:bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition"
           >
             <h4 class="font-bold text-lg text-gray-800">{{ kelas.nama_kelas }}</h4>
-            <p class="text-sm text-gray-500 mt-0.5">{{ kelas.nama_guru }}</p>
+            <p class="text-sm text-gray-500 mt-0.5">{{ kelas.nama_guru || 'Guru tidak diketahui' }}</p>
           </div>
           <p v-if="kelasDiikuti.length === 0" class="text-gray-500 text-sm italic">Belum ada kelas yang diikuti.</p>
         </div>
       </div>
 
-      <!-- Daftar Tugas -->
       <div class="bg-[#D9D9D9] rounded-2xl p-6 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-800 mb-4">Tugas</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Tugas Terbaru</h2>
         <div class="space-y-4">
           <div 
-            v-for="tugas in tugasBelum" 
+            v-for="tugas in tugasBelum.slice(0, 3)" 
             :key="tugas.id"
             class="bg-[#F3F3F3] p-6 rounded-xl border border-gray-200 shadow-sm"
           >
             <h4 class="font-bold text-lg text-gray-800">{{ tugas.judul_tugas }}</h4>
-            <p class="text-sm text-gray-600 mt-1">Tenggat: {{ tugas.deadline }}</p>
+            <p class="text-sm text-gray-600 mt-1">Tenggat: <span class="font-bold text-red-600">{{ tugas.deadline || '-' }}</span></p>
           </div>
           <p v-if="tugasBelum.length === 0" class="text-gray-500 text-sm italic">Tidak ada tugas saat ini.</p>
+          
+          <p 
+            v-if="tugasBelum.length > 3" 
+            @click="router.push({ name: 'student-tugas' })"
+            class="text-sm text-blue-600 font-medium cursor-pointer hover:underline text-center pt-2"
+          >
+            Lihat semua {{ tugasBelum.length }} tugas...
+          </p>
         </div>
       </div>
     </div>
 
-    <!-- Pop-up Modal Gabung Kelas (Tailwind Backdrop Blur Fix) -->
     <div 
       v-if="showJoinModal" 
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all"
@@ -128,7 +128,7 @@ import apiClient from '@/axios'
 const router = useRouter()
 const userName = ref('')
 const kelasDiikuti = ref([])
-const tugasBelum = ref([])
+const tugasBelum = ref([]) // State untuk menampung tugas
 const showJoinModal = ref(false)
 const kodeKelas = ref('')
 
@@ -149,29 +149,39 @@ const showNotification = (message, type = 'success') => {
   }, 3000)
 }
 
-const fetchDashboardData = async () => {
+// Fungsi Fetch Daftar Kelas
+const fetchKelasDashboard = async () => {
   try {
-    userName.value = localStorage.getItem('user_name') || 'Siswa'
-    
-    // Tembak GET ke /kelas/join sesuai instruksi teman backend kamu
     const res = await apiClient.get('/kelas/joined')
-    
-    // Cek struktur data yang dikembalikan Lumen
     if (Array.isArray(res.data)) {
       kelasDiikuti.value = res.data
     } else if (res.data.data && Array.isArray(res.data.data)) {
       kelasDiikuti.value = res.data.data
     } else {
-      // Antisipasi kalau dibungkus key 'kelas' atau 'classes'
       kelasDiikuti.value = res.data.kelas || res.data.classes || []
     }
-    
-    console.log("Daftar Kelas Siswa:", res.data)
   } catch (err) {
-    console.error('Gagal mengambil daftar kelas dari /kelas/joined:', err)
+    console.error('Gagal mengambil daftar kelas:', err)
   }
 }
 
+// Fungsi Fetch Daftar Tugas (BARU DITAMBAHKAN)
+const fetchTugasDashboard = async () => {
+  try {
+    const res = await apiClient.get('/tugas')
+    if (Array.isArray(res.data)) {
+      tugasBelum.value = res.data
+    } else if (res.data.data && Array.isArray(res.data.data)) {
+      tugasBelum.value = res.data.data
+    } else {
+      tugasBelum.value = []
+    }
+  } catch (err) {
+    console.error('Gagal mengambil daftar tugas:', err)
+  }
+}
+
+// Fungsi Eksekusi Gabung Kelas
 const joinKelas = async () => {
   if (!kodeKelas.value) {
     showNotification('Masukkan kode kelas terlebih dahulu!', 'error')
@@ -179,32 +189,34 @@ const joinKelas = async () => {
   }
   
   try {
-    // Menyesuaikan payload request ke backend Lumen Anda
-    // Pastikan key 'kode_kelas' atau 'kode' sesuai dengan parameter di Lumen Controller Anda
     const response = await apiClient.post('/kelas/join', { 
-      kode_kelas: kodeKelas.value.toUpperCase() // Otomatis dipaksa huruf besar sebelum dikirim
+      kode_kelas: kodeKelas.value.toUpperCase() 
     })
     
-    // Menyesuaikan pembacaan response sukses dari backend
     const successMsg = response.data.message || 'Berhasil bergabung ke kelas!'
     showNotification(successMsg, 'success')
     
     showJoinModal.value = false
     kodeKelas.value = ''
-    fetchDashboardData() // Refresh data otomatis setelah sukses
+    
+    // Panggil ulang data kelas dan tugas setelah berhasil gabung
+    fetchKelasDashboard() 
+    fetchTugasDashboard()
   } catch (err) {
-    // Menyesuaikan pembacaan response error dari Lumen
-    // Biasanya Lumen mengembalikan error di err.response.data.message atau err.response.data.error
     const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Gagal bergabung ke kelas'
     showNotification(errorMsg, 'error')
   }
 }
 
-onMounted(fetchDashboardData)
+// Jalankan Fetch Nama, Kelas, dan Tugas saat komponen dimuat
+onMounted(() => {
+  userName.value = localStorage.getItem('user_name') || 'Siswa'
+  fetchKelasDashboard()
+  fetchTugasDashboard()
+})
 </script>
 
 <style scoped>
-/* Animasi Transisi Halus untuk Toast Notification */
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;

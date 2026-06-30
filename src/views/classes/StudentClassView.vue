@@ -6,7 +6,7 @@
       
       <!-- Tombol Gabung Kelas dengan Ikon -->
       <button 
-        @click="handleJoinClick" 
+        @click="showJoinModal = true" 
         class="bg-[#1e293b] text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-800 transition-all duration-200 shadow-sm"
       >
         <span class="text-lg">+</span> Gabung Kelas
