@@ -121,7 +121,7 @@
             <div class="border border-gray-400 rounded-lg p-3 mb-4 flex items-center gap-3 bg-gray-200">
               <div class="bg-gray-600 text-white px-2 py-1 rounded text-[10px] font-bold">FILE</div>
               <span class="text-sm text-gray-800 font-medium truncate">
-                {{ selectedTask.file_siswa_name || 'Tugas_Terkirim.pdf' }}
+                Tugas_Terkumpul
               </span>
             </div>
             
@@ -136,14 +136,13 @@
       </div>
 
       <div v-else-if="currentTab === 'orang'" class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
-        
         <div>
           <h2 class="text-xl font-bold text-gray-800 mb-6 border-b border-gray-300 pb-2">Pengajar</h2>
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-gray-600 bg-gray-300 shadow-sm">
               {{ pengajar.name ? pengajar.name.charAt(0).toUpperCase() : 'G' }}
             </div>
-            <span class="text-gray-800 font-medium">{{ pengajar.name || 'Nama Guru' }}</span>
+            <span class="text-gray-800 font-medium">{{ pengajar.name || 'Guru Pengajar' }}</span>
           </div>
         </div>
 
@@ -179,9 +178,6 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '@/axios.js'
 
-// ==========================================
-// INISIALISASI ROUTER & STATE
-// ==========================================
 const route = useRoute()
 const classId = route.params.classId 
 
@@ -202,34 +198,29 @@ const students = ref([])
 const pengajar = ref({})
 
 // ==========================================
-// FUNGSI PENGAMBILAN DATA (API)
+// 1. MENGAMBIL DATA KELAS & TUGAS
 // ==========================================
 const fetchDetailKelasData = async () => {
   try {
-    // 1. MENGATASI "MEMUAT...": Ambil daftar kelas yang diikuti, lalu cari nama kelasnya
+    // Ambil daftar kelas untuk mendapatkan nama kelasnya
     const resKelas = await apiClient.get('/kelas/joined')
-    const semuaKelas = Array.isArray(resKelas.data) ? resKelas.data : 
-                      (resKelas.data.data || resKelas.data.kelas || [])
+    const semuaKelas = Array.isArray(resKelas.data) ? resKelas.data : (resKelas.data.data || resKelas.data.kelas || [])
     
-    // Cari kelas yang ID-nya cocok dengan parameter classId di URL
     const kelasSaatIni = semuaKelas.find(k => k.id == classId)
     
     if (kelasSaatIni) {
-      detailKelas.value = kelasSaatIni // Nama kelas akan langsung muncul!
+      detailKelas.value = kelasSaatIni 
     } else {
       detailKelas.value = { nama_kelas: 'Kelas Tidak Ditemukan' }
     }
 
-    // 2. MENGAMBIL DATA TUGAS: Ambil semua tugas, lalu filter khusus kelas ini
+    // Ambil semua tugas, lalu filter khusus ID kelas yang sedang dibuka
     const resTugas = await apiClient.get('/tugas')
-    const semuaTugas = Array.isArray(resTugas.data) ? resTugas.data : 
-                      (resTugas.data.data || [])
+    const semuaTugas = Array.isArray(resTugas.data) ? resTugas.data : (resTugas.data.data || [])
     
-    // Saring agar HANYA tugas dari kelas ini yang masuk ke tab Tugas
     tugasList.value = semuaTugas.filter(tugas => tugas.kelas_id == classId)
 
-    // 3. MENGAMBIL DATA MATERI & ORANG (Jika API-nya sudah ada)
-    // Untuk saat ini dikosongkan/dummy dulu sampai teman backend membuat API-nya
+    // Dummy untuk materi & orang (sementara)
     materiList.value = [] 
     students.value = []
     pengajar.value = { name: kelasSaatIni?.nama_guru || 'Guru Pengajar' }
@@ -240,20 +231,22 @@ const fetchDetailKelasData = async () => {
 }
 
 // ==========================================
-// FUNGSI INTERAKSI MATERI & TUGAS
+// 2. FUNGSI DOWNLOAD FILE MATERI / TUGAS
 // ==========================================
-const downloadFile = (filePath) => {
-  if (!filePath) return
-  window.open(`http://192.168.33.104:8000/storage/${filePath}`, '_blank')
+const downloadFile = (namaFile) => {
+  if (!namaFile) return
+  // PERUBAHAN: Menyesuaikan folder public/uploads/jawaban dari Lumen temanmu
+  window.open(`http://192.168.1.10:8000/uploads/jawaban/${namaFile}`, '_blank')
 }
 
+// Membuka tugas tertentu di tab tugas
 const selectTask = (task) => {
   selectedTask.value = task
-  isUploaded.value = task.is_submitted || false
+  isUploaded.value = task.status === 'Selesai' || task.is_submitted || false
 }
 
 // ==========================================
-// FUNGSI UPLOAD TUGAS
+// 3. FUNGSI UPLOAD JAWABAN TUGAS (MENGIRIM KE BACKEND)
 // ==========================================
 const triggerFileInput = () => {
   fileInput.value.click()
@@ -270,41 +263,32 @@ const handleUploadTugas = async () => {
   if (!chosenFile.value) return
   
   const formData = new FormData()
-  formData.append('file_tugas', chosenFile.value)
-  formData.append('tugas_id', selectedTask.value.id)
+  
+  // PERUBAHAN: Key diubah menjadi 'file_jawaban' sesuai Controller Lumen
+  formData.append('file_jawaban', chosenFile.value)
 
   try {
-    await apiClient.post(`/tugas/submit`, formData, {
+    // PERUBAHAN: URL menembak route POST /tugas/{tugasId}/kumpul
+    await apiClient.post(`/tugas/${selectedTask.value.id}/kumpul`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
     alert('Tugas berhasil dikirim!')
     isUploaded.value = true
-    fetchDetailKelasData() // Sinkronisasi ulang data terbaru
+    fetchDetailKelasData() // Tarik ulang data supaya UI terupdate
     
   } catch (err) {
     console.error('Gagal mengirim file tugas:', err)
-    alert('Gagal mengirim tugas.')
+    const errorMessage = err.response?.data?.message || 'Gagal mengirim tugas.'
+    alert(errorMessage)
   }
 }
 
 const handleBatalkanTugas = async () => {
-  try {
-    await apiClient.post(`/tugas/${selectedTask.value.id}/cancel`)
-    
-    alert('Pengiriman berhasil dibatalkan.')
-    isUploaded.value = false
-    chosenFile.value = null
-    fetchDetailKelasData()
-    
-  } catch (err) {
-    console.error('Gagal membatalkan tugas:', err)
-  }
+  // Hanya contoh jika ke depan temanmu bikin fitur batal kumpul
+  alert('Fitur pembatalan tugas belum tersedia di backend.')
 }
 
-// ==========================================
-// LIFECYCLE HOOK
-// ==========================================
 onMounted(() => {
   if (classId) {
     fetchDetailKelasData()

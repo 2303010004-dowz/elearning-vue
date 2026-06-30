@@ -1,5 +1,4 @@
 <template>
-  <!-- RouterView ini yang akan berganti secara otomatis jadi halaman Login atau Dashboard -->
   <RouterView />
 </template>
 
