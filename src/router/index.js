@@ -19,6 +19,9 @@ const CreateTugasView = () => import('../views/tugas/CreateTugasView.vue')
 const EditTugasView = () => import('../views/tugas/EditTugasView.vue')
 const NilaiTugasView = () => import('../views/tugas/NilaiTugasView.vue')
 
+// View untuk Materi Guru
+const MateriGuruView = () => import('../views/materi/MateriGuruView.vue') // Pastikan kamu membuat file ini di folder yang sesuai
+
 const DiscussionForumView = () => import('../views/forum/DiscussionForumView.vue')
 const ProfileView = () => import('../views/profile/ProfileView.vue')
 
@@ -35,19 +38,22 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-class', name: 'student-class', component: StudentClassView, meta: { requiresAuth: true, role: 'siswa' } },
   { path: '/student-tugas', name: 'student-tugas', component: StudentTugasView, meta: { requiresAuth: true, role: 'siswa' } },
-  { 
-  path: '/class-detail/:classId',name: 'class-detail', component: ClassDetailView,meta: { requiresAuth: true, role: 'siswa' } },
+  { path: '/class-detail/:classId', name: 'class-detail', component: ClassDetailView, meta: { requiresAuth: true, role: 'siswa' } },
+  
   // --- PROTECTED ROUTES (GURU) ---
   { path: '/dashboard-guru', name: 'dashboard-guru', component: DashboardGuruView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class', name: 'teacher-class', component: TeacherClassView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/teacher-class/create', name: 'create-class', component: CreateClassView, meta: { requiresAuth: true, role: 'guru' } },
   
+  // Route Materi Guru
+  { path: '/materi-guru', name: 'materi-guru', component: MateriGuruView, meta: { requiresAuth: true, role: 'guru' } },
+
   // Tugas Guru
   { path: '/grading', name: 'grading', component: TeacherTugasView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/create-tugas', name: 'create-tugas', component: CreateTugasView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/tugas/:id/edit', name: 'edit-tugas', component: EditTugasView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/tugas/:id/nilai', name: 'nilai-tugas', component: NilaiTugasView, meta: { requiresAuth: true, role: 'guru' } },
-
+  
   // --- SHARED ROUTES ---
   { path: '/discussion-forum', name: 'discussion-forum', component: DiscussionForumView, meta: { requiresAuth: true } },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } }

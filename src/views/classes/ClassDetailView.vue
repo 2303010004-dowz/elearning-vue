@@ -1,315 +1,301 @@
 <template>
-  <div class="flex min-h-screen bg-[#F3F3F3] font-sans text-gray-800">
-    <main class="flex-1 p-8">
+  <DashboardLayout hideSidebar>
+    <div class="w-full min-h-screen bg-[#F4F4F4] -mt-8 -mx-8">
       
-      <!-- HEADER DINAMIS -->
-      <div class="mb-8 flex items-center">
-        <button @click="$router.back()" class="mr-4 focus:outline-none hover:text-black transition">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      <!-- HEADER PUTIH POLOS (Rapi & Sejajar) -->
+      <div class="w-full flex items-center px-10 bg-[#F4F4F4] h-[75px] border-b border-gray-300">
+        <button 
+          @click="kembaliKeDaftar" 
+          class="flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors mr-3 focus:outline-none"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span class="text-gray-500 mr-2 text-sm md:text-base">Kelas saya /</span>
-        <h1 class="text-xl font-bold text-gray-800">{{ detailKelas.nama_kelas || 'Memuat...' }}</h1>
-      </div>
-
-      <!-- TABS NAVIGASI -->
-      <div class="border-b border-gray-400 mb-8 flex gap-12">
-        <button 
-          @click="currentTab = 'materi'; selectedTask = null" 
-          :class="currentTab === 'materi' ? 'pb-3 border-b-2 border-gray-800 font-bold text-gray-900' : 'pb-3 text-gray-600 hover:text-gray-900'"
-        >
-          Materi
-        </button>
-        <button 
-          @click="currentTab = 'tugas'" 
-          :class="currentTab === 'tugas' ? 'pb-3 border-b-2 border-gray-800 font-bold text-gray-900' : 'pb-3 text-gray-600 hover:text-gray-900'"
-        >
-          Tugas
-        </button>
-        <button 
-          @click="currentTab = 'orang'" 
-          :class="currentTab === 'orang' ? 'pb-3 border-b-2 border-gray-800 font-bold text-gray-900' : 'pb-3 text-gray-600 hover:text-gray-900'"
-        >
-          Orang
-        </button>
-      </div>
-
-      <!-- KONTEN: MATERI -->
-      <div v-if="currentTab === 'materi'" class="space-y-4">
-        <div v-if="materiList.length === 0" class="text-gray-500 italic p-4">
-          Belum ada materi di kelas ini.
+        <div class="flex items-center text-[1.05rem] font-medium pt-0.5">
+          <span class="text-gray-500 cursor-pointer hover:text-gray-800 transition" @click="kembaliKeDaftar">Kelas Saya</span>
+          <span class="text-gray-400 mx-2.5">/</span>
+          <!-- Menampilkan Nama Kelas (Atau ID jika belum selesai loading) -->
+          <span class="font-bold text-gray-900">{{ detailKelas ? detailKelas.nama_kelas : 'Memuat...' }}</span>
         </div>
+      </div>
+
+      <!-- Tab Navigasi -->
+      <div class="w-full bg-[#F4F4F4] px-10 border-b border-gray-300 shadow-sm">
+        <div class="flex gap-8 text-[1rem]">
+          <button 
+            v-for="tab in ['materi', 'tugas']" 
+            :key="tab"
+            @click="activeTab = tab"
+            class="capitalize py-3.5 px-2 font-semibold transition-all border-b-[3px] focus:outline-none"
+            :class="activeTab === tab ? 'border-gray-800 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          >
+            {{ tab }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Area Konten Tab -->
+      <div class="px-10 pt-8 pb-12">
         
-        <div 
-          v-for="item in materiList" 
-          :key="item.id" 
-          @click="downloadFile(item.file_path)"
-          class="bg-[#D9D9D9] p-4 rounded-xl flex items-center gap-4 w-full max-w-md cursor-pointer hover:bg-gray-300 transition"
-        >
-          <div class="bg-gray-600 text-white px-2 py-1 rounded text-[10px] font-bold">
-            {{ item.tipe_file || 'PDF' }}
+        <!-- ================== TAB MATERI ================== -->
+        <div v-if="activeTab === 'materi'">
+          <div v-if="materiKelas.length === 0" class="text-gray-500 italic p-6 bg-white rounded-xl border border-gray-200 shadow-sm text-center">
+            Belum ada materi yang dibagikan oleh guru di kelas ini.
           </div>
-          <div>
-            <h4 class="text-sm font-bold text-gray-800">{{ item.judul_materi }}</h4>
-            <p class="text-xs text-gray-500 mt-1">
-              {{ item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-' }}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <!-- KONTEN: DAFTAR TUGAS -->
-      <div v-else-if="currentTab === 'tugas' && !selectedTask" class="space-y-4">
-        <div v-if="tugasList.length === 0" class="text-gray-500 italic p-4">
-          Belum ada tugas di kelas ini.
-        </div>
-
-        <div 
-          v-for="task in tugasList" 
-          :key="task.id" 
-          @click="selectTask(task)" 
-          class="bg-[#D9D9D9] p-4 rounded-xl flex items-center gap-4 w-full max-w-md cursor-pointer hover:bg-gray-300 transition"
-        >
-          <div class="text-gray-700">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 2a8 8 0 100 16 8 8 0 010-16zm1 8H7v2h4v-2z" />
-            </svg>
-          </div>
-          <div>
-            <h4 class="text-sm font-bold text-gray-800">{{ task.judul_tugas }}</h4>
-            <p class="text-xs text-gray-500 mt-1">
-              Batas: {{ task.deadline ? new Date(task.deadline).toLocaleDateString('id-ID') : 'Tidak ada tenggat' }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- KONTEN: DETAIL & PENGUMPULAN TUGAS -->
-      <div v-else-if="currentTab === 'tugas' && selectedTask" class="flex flex-col lg:flex-row gap-12">
-        
-        <div class="flex-1">
-          <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ selectedTask.judul_tugas }}</h1>
-          <hr class="border-gray-400 mb-6">
-          <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ selectedTask.deskripsi || 'Tidak ada instruksi tambahan.' }}</p>
-        </div>
-        
-        <div class="w-full lg:w-80 bg-[#D9D9D9] p-6 rounded-2xl h-fit">
-          <h2 class="text-xl font-bold mb-4">Tugas Anda</h2>
-
-          <input type="file" ref="fileInput" class="hidden" @change="onFileSelected" />
-
-          <!-- JIKA BELUM UPLOAD -->
-          <div v-if="!isUploaded">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div 
-              @click="triggerFileInput"
-              class="border-2 border-dashed border-gray-400 rounded-xl p-8 text-center mb-4 cursor-pointer hover:bg-gray-200 transition"
+              v-for="materi in materiKelas" 
+              :key="materi.id"
+              class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full"
             >
-              <svg class="w-8 h-8 mx-auto text-gray-600 mb-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/>
-              </svg>
-              <p class="text-xs text-gray-800 font-medium">
-                {{ chosenFile ? chosenFile.name : 'Unggah File' }}<br>
-                <span class="text-[10px] text-gray-500 font-normal" v-if="!chosenFile">Klik untuk memilih file</span>
-              </p>
-            </div>
-            
-            <button 
-              @click="handleUploadTugas" 
-              :disabled="!chosenFile" 
-              class="w-full bg-[#4A86A8] text-white py-2.5 rounded-lg font-bold hover:bg-[#3a6d8a] disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              Kirim Tugas
-            </button>
-          </div>
-
-          <!-- JIKA SUDAH UPLOAD -->
-          <div v-else>
-            <div class="border border-gray-400 rounded-lg p-3 mb-4 flex items-center gap-3 bg-gray-200">
-              <div class="bg-gray-600 text-white px-2 py-1 rounded text-[10px] font-bold">FILE</div>
-              <span class="text-sm text-gray-800 font-medium truncate">
-                Tugas_Terkumpul
-              </span>
-            </div>
-            
-            <button 
-              @click="handleBatalkanTugas" 
-              class="w-full bg-gray-600 text-white py-2.5 rounded-lg font-bold hover:bg-gray-700 transition"
-            >
-              Batalkan Pengiriman
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- KONTEN: ORANG (SUDAH DINAMIS) -->
-      <div v-else-if="currentTab === 'orang'" class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
-        
-        <!-- KOLOM PENGAJAR -->
-        <div>
-          <h2 class="text-xl font-bold text-gray-800 mb-6 border-b border-gray-300 pb-2">Pengajar</h2>
-          <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-gray-600 bg-gray-300 shadow-sm">
-              {{ pengajar.nama ? pengajar.nama.charAt(0).toUpperCase() : 'G' }}
-            </div>
-            <!-- Mengambil nama guru dari API -->
-            <span class="text-gray-800 font-medium">{{ pengajar.nama || 'Memuat nama guru...' }}</span>
-          </div>
-        </div>
-
-        <!-- KOLOM TEMAN SEKELAS -->
-        <div>
-          <h2 class="text-xl font-bold text-gray-800 mb-6 border-b border-gray-300 pb-2">Teman Sekelas</h2>
-          <div class="space-y-4">
-            <div v-if="students.length === 0" class="text-gray-500 italic text-sm">
-              Belum ada siswa lain di kelas ini.
-            </div>
-            
-            <!-- Looping data siswa dari API -->
-            <div v-for="student in students" :key="student.id" class="flex items-center gap-4">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-gray-600 bg-gray-300 text-sm uppercase">
-                <!-- Membaca huruf depan nama siswa (name atau nama) -->
-                {{ (student.nama_lengkap || student.nama_lengkap || 'S').charAt(0) }}
+              <div class="flex items-start gap-4 mb-3">
+                <div class="bg-[#555555] text-white font-bold rounded-lg w-[45px] h-[45px] flex items-center justify-center shrink-0">FILE</div>
+                <div>
+                  <h3 class="font-bold text-gray-800 text-[1.05rem] leading-tight mb-1">{{ materi.judul_materi }}</h3>
+                  <span class="text-gray-500 text-xs">{{ formatTanggal(materi.created_at) }}</span>
+                </div>
               </div>
-              <span class="text-gray-800">{{ student.nama_lengkap || student.nama_lengkap }}</span>
+              <p class="text-sm text-gray-600 line-clamp-2 mb-4 flex-grow">{{ materi.isi_materi || 'Tidak ada instruksi tambahan.' }}</p>
+              <div class="flex justify-between items-center mt-auto border-t border-gray-200 pt-3">
+                <span class="text-xs font-medium text-gray-600 truncate w-3/4" :title="materi.lampiran_file">
+                  📄 {{ formatNamaFile(materi.lampiran_file) }}
+                </span>
+                <button @click="bukaFile(materi.lampiran_file)" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-4 py-1.5 rounded-lg font-bold transition">
+                  Buka
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- CHAT ICON -->
-      <div class="fixed bottom-8 right-8 bg-[#4A4A4A] p-4 rounded-full text-white cursor-pointer shadow-lg hover:bg-gray-800 hover:scale-105 transition-all">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4-4-4H4a2 2 0 01-2-2V5z" />
-        </svg>
-      </div>
+        <!-- ================== TAB TUGAS ================== -->
+        <div v-else-if="activeTab === 'tugas'">
+          
+          <!-- Daftar Tugas -->
+          <div v-if="!selectedTugas">
+            <div v-if="daftarTugas.length > 0">
+              <div 
+                v-for="tugas in daftarTugas" 
+                :key="tugas.id" 
+                @click="pilihTugas(tugas)" 
+                class="bg-white p-5 rounded-xl border border-gray-200 mb-4 shadow-sm cursor-pointer hover:border-gray-800 transition group"
+              >
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-bold text-gray-800 text-lg transition">{{ tugas.judul_tugas }}</h3>
+                    <p class="text-sm text-gray-600 line-clamp-2 mt-1">{{ tugas.deskripsi }}</p>
+                  </div>
+                  <div class="text-right shrink-0 ml-4">
+                    <p class="text-xs text-gray-500 font-medium">Tenggat Waktu:</p>
+                    <p class="text-sm font-bold text-red-500">{{ formatTanggal(tugas.deadline) || '-' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-gray-500 italic p-6 bg-white rounded-xl border border-gray-200 shadow-sm text-center">
+              Belum ada tugas untuk kelas ini.
+            </div>
+          </div>
 
-    </main>
-  </div>
+          <!-- Detail Tugas & Form Kumpul Jawaban -->
+          <div v-else>
+            <button @click="tutupTugas" class="mb-5 flex items-center text-gray-600 hover:text-black font-semibold transition">
+              ← Kembali ke Daftar Tugas
+            </button>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Kolom Kiri: Detail Instruksi Tugas -->
+              <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
+                <h1 class="text-2xl font-bold mb-2 text-gray-800">{{ selectedTugas.judul_tugas }}</h1>
+                <p class="text-sm text-gray-500 mb-6 font-medium">Batas Waktu: <span class="text-red-500">{{ formatTanggal(selectedTugas.deadline) || 'Tidak ada tenggat' }}</span></p>
+                <div class="border-t border-gray-200 pt-6">
+                  <h3 class="text-sm font-bold text-gray-800 mb-2">Instruksi Tugas:</h3>
+                  <p class="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">{{ selectedTugas.deskripsi }}</p>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan: Form Pengumpulan Tugas -->
+              <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-300 h-fit">
+                <h3 class="font-bold text-gray-800 mb-4 text-lg">Kumpulkan Jawaban</h3>
+                
+                <form @submit.prevent="submitJawaban">
+                  <div class="mb-6">
+                    <input type="file" ref="fileJawabanInput" @change="onFileJawabanSelected" class="hidden" accept=".pdf,.doc,.docx,.zip,.rar">
+                    
+                    <div 
+                      @click="triggerFileJawabanInput"
+                      class="border-2 border-dashed border-gray-400 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50 transition bg-[#F4F4F4]"
+                      :class="{'border-gray-800 bg-gray-100': selectedFileJawaban}"
+                    >
+                      <svg v-if="!selectedFileJawaban" class="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                      </svg>
+                      <svg v-else class="w-8 h-8 mx-auto text-gray-800 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+
+                      <p class="text-sm font-bold text-gray-800">
+                        {{ selectedFileJawaban ? selectedFileJawaban.name : 'Pilih File Jawaban' }}
+                      </p>
+                      <p class="text-[0.65rem] text-gray-500 mt-1">PDF, DOCX, ZIP (Max. 10MB)</p>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    :disabled="isSubmittingJawaban"
+                    class="w-full bg-[#1e293b] hover:bg-gray-800 text-white py-3 rounded-xl font-bold transition shadow-sm disabled:opacity-50"
+                  >
+                    {{ isSubmittingJawaban ? 'Mengirim...' : 'Kirim Jawaban' }}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import apiClient from '@/axios.js'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
-const classId = route.params.classId 
+const router = useRouter()
 
-// State Navigasi & UI
-const currentTab = ref('materi')
-const selectedTask = ref(null)
-const isUploaded = ref(false)
+// Menangkap ID Kelas dari URL (misal: /class-detail/3)
+const classId = route.params.classId
 
-// State File Upload
-const chosenFile = ref(null)
-const fileInput = ref(null)
+const detailKelas = ref(null)
+const activeTab = ref('materi')
+const materiKelas = ref([])
+const daftarTugas = ref([])
 
-// State Penampung Data Backend
-const detailKelas = ref({})
-const materiList = ref([])
-const tugasList = ref([])
-const students = ref([])
-const pengajar = ref({})
+// Form Jawaban
+const selectedTugas = ref(null)
+const fileJawabanInput = ref(null)
+const selectedFileJawaban = ref(null)
+const isSubmittingJawaban = ref(false)
 
-// ==========================================
-// 1. MENGAMBIL DATA KELAS, TUGAS, & PESERTA
-// ==========================================
-const fetchDetailKelasData = async () => {
+const fetchData = async () => {
   try {
-    // 1. Ambil detail kelas (untuk judul dan nama guru)
-    const resKelas = await apiClient.get('/kelas/joined')
-    const semuaKelas = Array.isArray(resKelas.data) ? resKelas.data : (resKelas.data.data || resKelas.data.kelas || [])
+    const token = localStorage.getItem('token_jwt')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
     
-    const kelasSaatIni = semuaKelas.find(k => k.id == classId)
-    
-    if (kelasSaatIni) {
-      detailKelas.value = kelasSaatIni 
-      // Set nama guru secara otomatis dari data kelas
-      pengajar.value = { nama: kelasSaatIni.nama_guru || 'Guru Pengajar' }
-    } else {
-      detailKelas.value = { nama_kelas: 'Kelas Tidak Ditemukan' }
+    // Opsional: Ambil detail kelas (jika backend-mu menyediakan endpoint GET /kelas/{id})
+    try {
+      const resKelas = await apiClient.get(`/kelas/${classId}`, config)
+      detailKelas.value = resKelas.data.data || resKelas.data
+    } catch (e) {
+      // Fallback jika API detail kelas belum ada
+      detailKelas.value = { nama_kelas: `Kelas ID: ${classId}` }
     }
 
-    // 2. Ambil data Tugas
-    const resTugas = await apiClient.get('/tugas')
-    const semuaTugas = Array.isArray(resTugas.data) ? resTugas.data : (resTugas.data.data || [])
-    tugasList.value = semuaTugas.filter(tugas => tugas.kelas_id == classId)
+    // Ambil Materi
+    const resMateri = await apiClient.get(`/kelas/${classId}/materi`, config)
+    const dataMateri = resMateri.data.data || resMateri.data || []
+    materiKelas.value = dataMateri.sort((a, b) => b.id - a.id)
 
-    // 3. Ambil data Teman Sekelas (Orang)
-    // Vue mencoba meminta daftar peserta ke Lumen
-    const resPeserta = await apiClient.get(`/kelas/${classId}/peserta`)
-    if (resPeserta.data && resPeserta.data.data) {
-      students.value = resPeserta.data.data
-    } else if (Array.isArray(resPeserta.data)) {
-      students.value = resPeserta.data
-    }
-
-    // Materi masih kosong (tunggu API materi)
-    materiList.value = [] 
+    // Ambil Tugas
+    const resTugas = await apiClient.get(`/tugas?kelas_id=${classId}`, config)
+    const semuaTugas = resTugas.data.data || resTugas.data || []
+    daftarTugas.value = semuaTugas.filter(tugas => tugas.kelas_id == classId).sort((a, b) => b.id - a.id)
 
   } catch (err) {
-    console.error('Gagal mengambil data dari server:', err)
+    console.error('Gagal memuat data detail kelas:', err)
   }
 }
 
 // ==========================================
-// 2. FUNGSI DOWNLOAD FILE MATERI / TUGAS
+// PENGUMPULAN TUGAS (STUDENT SIDE)
 // ==========================================
-const downloadFile = (namaFile) => {
-  if (!namaFile) return
-  window.open(`http://192.168.1.10:8000/uploads/jawaban/${namaFile}`, '_blank')
-}
+const triggerFileJawabanInput = () => { fileJawabanInput.value.click() }
 
-// Membuka tugas tertentu di tab tugas
-const selectTask = (task) => {
-  selectedTask.value = task
-  isUploaded.value = task.status === 'Selesai' || task.is_submitted || false
-}
-
-// ==========================================
-// 3. FUNGSI UPLOAD JAWABAN TUGAS
-// ==========================================
-const triggerFileInput = () => {
-  fileInput.value.click()
-}
-
-const onFileSelected = (event) => {
+const onFileJawabanSelected = (event) => {
   const file = event.target.files[0]
   if (file) {
-    chosenFile.value = file
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire('Terlalu Besar', 'Maksimal ukuran file 10MB', 'warning')
+      fileJawabanInput.value.value = ''
+      selectedFileJawaban.value = null
+      return
+    }
+    selectedFileJawaban.value = file
   }
 }
 
-const handleUploadTugas = async () => {
-  if (!chosenFile.value) return
-  
+const submitJawaban = async () => {
+  if (!selectedFileJawaban.value) {
+    Swal.fire('Oops!', 'Pilih file jawaban terlebih dahulu!', 'warning')
+    return
+  }
+
+  isSubmittingJawaban.value = true
   const formData = new FormData()
-  formData.append('file_jawaban', chosenFile.value)
+  formData.append('tugas_id', selectedTugas.value.id)
+  formData.append('file_jawaban', selectedFileJawaban.value)
 
   try {
-    await apiClient.post(`/tugas/${selectedTask.value.id}/kumpul`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const token = localStorage.getItem('token_jwt')
+    // Sesuaikan dengan endpoint Lumen temanmu (contoh: POST /jawaban-tugas)
+    await apiClient.post('/jawaban', formData, {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
     })
-    
-    alert('Tugas berhasil dikirim!')
-    isUploaded.value = true
-    fetchDetailKelasData()
-    
-  } catch (err) {
-    console.error('Gagal mengirim file tugas:', err)
-    const errorMessage = err.response?.data?.message || 'Gagal mengirim tugas.'
-    alert(errorMessage)
+
+    Swal.fire('Berhasil!', 'Jawaban tugas Anda berhasil dikumpulkan.', 'success')
+    tutupTugas()
+
+  } catch (error) {
+    console.error('Gagal mengumpulkan tugas:', error)
+    Swal.fire('Gagal', 'Terjadi kesalahan saat mengirim jawaban.', 'error')
+  } finally {
+    isSubmittingJawaban.value = false
   }
 }
 
-const handleBatalkanTugas = async () => {
-  alert('Fitur pembatalan tugas belum tersedia di backend.')
+const pilihTugas = (tugas) => {
+  selectedTugas.value = tugas
+  selectedFileJawaban.value = null 
+}
+
+const tutupTugas = () => {
+  selectedTugas.value = null
+  selectedFileJawaban.value = null
+}
+
+const kembaliKeDaftar = () => {
+  router.push({ name: 'student-class' }) // Kembali ke daftar kelas siswa
+}
+
+const bukaFile = (namaFile) => {
+  if (!namaFile) return
+  window.open(`http://192.168.1.10:8000/uploads/materi/${namaFile}`, '_blank')
+}
+
+const formatNamaFile = (path) => {
+  if (!path) return 'File'
+  const parts = path.split('/')
+  return parts[parts.length - 1]
+}
+
+const formatTanggal = (dateString) => {
+  if (!dateString) return '-'
+  const tgl = new Date(dateString)
+  return tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 onMounted(() => {
-  if (classId) {
-    fetchDetailKelasData()
-  }
+  fetchData()
 })
 </script>

@@ -281,7 +281,7 @@ const simpanNilai = async () => {
 // FUNGSI PENDUKUNG (UI & HELPER)
 // ==========================================
 const kembaliKeTugas = () => {
-  router.push({ name: 'tugas-guru' }) // Pastikan name route-nya sesuai
+  router.push({ name: 'grading' })
 }
 
 const pilihSiswa = (siswa) => { 
