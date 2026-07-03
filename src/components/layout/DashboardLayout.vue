@@ -20,6 +20,7 @@
           <RouterLink 
             :to="homePath" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
           >
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
             Beranda
@@ -28,22 +29,26 @@
           <RouterLink 
             :to="isGuru ? '/teacher-class' : '/student-class'" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
             Kelas Saya
           </RouterLink>
 
-          <router-link 
-            :to="{ name: 'materi-guru' }" 
+          <!-- INI YANG DIPERBAIKI (Dinamis untuk Guru / Siswa) -->
+          <RouterLink 
+            :to="isGuru ? '/materi-guru' : '/student-materi'" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
-        >
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             Materi
-        </router-link>
+          </RouterLink>
 
           <RouterLink 
             :to="isGuru ? '/grading' : '/student-tugas'" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             Tugas
@@ -52,6 +57,7 @@
           <RouterLink 
             to="/discussion-forum" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
           >
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
             Forum Diskusi
@@ -60,6 +66,7 @@
           <RouterLink 
             to="/profile" 
             class="flex items-center gap-4 px-4 py-3 text-lg font-medium text-gray-600 hover:bg-[#D8D8D8] rounded-lg transition"
+            active-class="bg-[#D8D8D8] text-gray-900 font-bold"
           >
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
             Profile

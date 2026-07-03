@@ -95,15 +95,13 @@ const router = useRouter()
 const daftarTugas = ref([])
 
 // ==========================================
-// MENGHITUNG STATISTIK (Berdasarkan data dari Backend)
+// MENGHITUNG STATISTIK (Dinamis dari Frontend)
 // ==========================================
 const totalBelumDinilai = computed(() => {
-  // Menjumlahkan properti "belum_dinilai" dari seluruh tugas (jika dikirim oleh Lumen)
   return daftarTugas.value.reduce((total, tugas) => total + (tugas.belum_dinilai || 0), 0)
 })
 
 const totalSudahDinilai = computed(() => {
-  // Menjumlahkan properti "sudah_dinilai" dari seluruh tugas
   return daftarTugas.value.reduce((total, tugas) => total + (tugas.sudah_dinilai || 0), 0)
 })
 
@@ -112,20 +110,66 @@ const totalSudahDinilai = computed(() => {
 // ==========================================
 const fetchTugas = async () => {
   try {
-    const token = localStorage.getItem('token')
+    // ⚠️ Saya ubah jadi token_jwt menyesuaikan kodinganmu di file lain agar konsisten
+    const token = localStorage.getItem('token_jwt') || localStorage.getItem('token')
     const response = await apiClient.get('/tugas', {
       headers: { Authorization: `Bearer ${token}` }
     })
 
+    let tasks = []
     if (response.data && response.data.data) {
-      // Mengurutkan dari yang terbaru
-      daftarTugas.value = response.data.data.sort((a, b) => b.id - a.id)
+      tasks = response.data.data
     } else if (Array.isArray(response.data)) {
-      daftarTugas.value = response.data.sort((a, b) => b.id - a.id)
+      tasks = response.data
     }
+
+    // Beri nilai default 0 agar tidak error sebelum dihitung
+    daftarTugas.value = tasks.sort((a, b) => b.id - a.id).map(t => ({
+      ...t,
+      jumlah_terkumpul: 0,
+      belum_dinilai: 0,
+      sudah_dinilai: 0
+    }))
+
+    // 🚀 PANGGIL FUNGSI PENGHITUNG OTOMATIS SETELAH TUGAS DIMUAT
+    if (daftarTugas.value.length > 0) {
+      hitungStatistikJawaban(token)
+    }
+
   } catch (error) {
     console.error('Gagal mengambil data tugas:', error)
   }
+}
+
+// 💡 FUNGSI BARU: Mengecek jawaban untuk masing-masing tugas
+const hitungStatistikJawaban = async (token) => {
+  // Kita gunakan Promise.all agar ngeceknya barengan (paralel) dan loadingnya lebih cepat
+  await Promise.all(daftarTugas.value.map(async (tugas, index) => {
+    try {
+      // Tembak endpoint list jawaban milik temanmu
+      const resJawaban = await apiClient.get(`/tugas/${tugas.id}/jawaban`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      const listJawaban = resJawaban.data.data || resJawaban.data || []
+      
+      if (Array.isArray(listJawaban)) {
+        // Hitung statistik
+        const totalMasuk = listJawaban.length
+        
+        // Asumsi: Jika field 'nilai' bernilai null / belum ada, berarti belum dinilai
+        const sudahDinilai = listJawaban.filter(j => j.nilai !== null && j.nilai !== undefined).length
+        const belumDinilai = totalMasuk - sudahDinilai
+
+        // Update langsung ke dalam array agar UI bereaksi
+        daftarTugas.value[index].jumlah_terkumpul = totalMasuk
+        daftarTugas.value[index].sudah_dinilai = sudahDinilai
+        daftarTugas.value[index].belum_dinilai = belumDinilai
+      }
+    } catch (err) {
+      // Abaikan jika error (misal tugas memang belum ada jawaban 404)
+    }
+  }))
 }
 
 // Fungsi Hapus Tugas
@@ -143,7 +187,7 @@ const hapusTugas = async (id) => {
 
   if (result.isConfirmed) {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token_jwt') || localStorage.getItem('token')
       await apiClient.delete(`/tugas/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })

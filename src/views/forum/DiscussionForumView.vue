@@ -8,7 +8,7 @@
         Memuat daftar kelas...
       </div>
       <div v-else-if="daftarKelas.length === 0" class="text-gray-500 italic p-6 bg-gray-100 rounded-xl text-center">
-        Kamu belum bergabung di kelas manapun.
+        Kamu belum memiliki atau bergabung di kelas manapun.
       </div>
 
       <div v-else class="flex flex-col gap-3">
@@ -25,8 +25,7 @@
             
             <div class="flex-grow">
               <h5 class="font-bold text-gray-900 mb-1 text-[1.1rem]">{{ kelas.nama_kelas }}</h5>
-              <div class="text-gray-500 text-xs mb-2">Guru: {{ kelas.nama_guru || kelas.nama_lengkap || 'Pengajar' }}</div>
-              <p class="text-gray-600 text-[0.95rem] italic">Klik untuk masuk ke ruang obrolan kelas...</p>
+              <div class="text-gray-500 text-xs mb-2">Kode: {{ kelas.kode_kelas }}</div>
             </div>
           </div>
         </div>
@@ -123,12 +122,37 @@ const isSending = ref(false)
 const daftarKelas = ref([])
 const listPesan = ref([])
 
-// 1. DAFATARKAN LIST KELAS YANG DIIKUTI
+// 1. DAFTARKAN LIST KELAS (Otomatis deteksi Guru / Siswa)
 const fetchDaftarKelas = async () => {
   isLoading.value = true
   try {
-    const res = await apiClient.get('/kelas/joined')
-    daftarKelas.value = Array.isArray(res.data) ? res.data : (res.data.data || res.data.kelas || [])
+    const token = localStorage.getItem('token_jwt')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    let semuaKelas = []
+
+    // A. Coba ambil kelas Siswa (Yang diikuti)
+    try {
+      const resSiswa = await apiClient.get('/kelas/joined', config)
+      const dataSiswa = resSiswa.data.data || resSiswa.data || []
+      if (Array.isArray(dataSiswa)) semuaKelas = [...semuaKelas, ...dataSiswa]
+    } catch (e) { /* Abaikan jika error / dia bukan siswa */ }
+
+    // B. Coba ambil kelas Guru (Yang dibuat)
+    try {
+      const resGuru = await apiClient.get('/kelas', config)
+      const dataGuru = resGuru.data.data || resGuru.data || []
+      if (Array.isArray(dataGuru)) {
+        // Hindari data dobel jika ada ID yang sama
+        dataGuru.forEach(kelas => {
+          if (!semuaKelas.find(k => k.id === kelas.id)) {
+            semuaKelas.push(kelas)
+          }
+        })
+      }
+    } catch (e) { /* Abaikan jika error / dia bukan guru */ }
+
+    daftarKelas.value = semuaKelas
+
   } catch (error) {
     console.error('Gagal memuat list kelas diskusi:', error)
   } finally {
@@ -144,7 +168,10 @@ const bukaRuangDiskusi = async (kelas) => {
 
 const fetchRiwayatChat = async (kelasId) => {
   try {
-    const res = await apiClient.get(`/kelas/${kelasId}/diskusi`)
+    const token = localStorage.getItem('token_jwt')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    
+    const res = await apiClient.get(`/kelas/${kelasId}/diskusi`, config)
     listPesan.value = res.data.data || res.data || []
   } catch (error) {
     console.error('Gagal mengambil riwayat obrolan:', error)
@@ -165,10 +192,12 @@ const kirimPesanDiskusi = async () => {
   const kelasId = selectedKelasDiskusi.value.id
 
   try {
-    // 🔴 DISESUAIKAN: Mengirim key payload 'isi_pesan' sesuai kodingan backend DiskusiController
-    await apiClient.post(`/kelas/${kelasId}/diskusi`, {
-      isi_pesan: inputPesanBaru.value
-    })
+    const token = localStorage.getItem('token_jwt')
+    
+    await apiClient.post(`/kelas/${kelasId}/diskusi`, 
+      { isi_pesan: inputPesanBaru.value },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
 
     // Memuat ulang riwayat chat agar chat terbaru langsung nangkring di bawah
     await fetchRiwayatChat(kelasId)

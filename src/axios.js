@@ -1,7 +1,7 @@
 // src/axios.js
 import axios from 'axios';
 
-const BACKEND_IP = '192.168.18.89:8000';
+const BACKEND_IP = '192.168.1.13:8000';
 const apiClient = axios.create({
   baseURL: `http://${BACKEND_IP}/api`,
   headers: {

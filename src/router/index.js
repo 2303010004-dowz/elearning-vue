@@ -20,7 +20,8 @@ const EditTugasView = () => import('../views/tugas/EditTugasView.vue')
 const NilaiTugasView = () => import('../views/tugas/NilaiTugasView.vue')
 
 // View untuk Materi Guru
-const MateriGuruView = () => import('../views/materi/MateriGuruView.vue') // Pastikan kamu membuat file ini di folder yang sesuai
+const MateriGuruView = () => import('../views/materi/MateriGuruView.vue') 
+const MateriSiswaView = () => import('../views/materi/MateriSiswaView.vue')
 
 const DiscussionForumView = () => import('../views/forum/DiscussionForumView.vue')
 const ProfileView = () => import('../views/profile/ProfileView.vue')
@@ -47,7 +48,7 @@ const routes = [
   
   // Route Materi Guru
   { path: '/materi-guru', name: 'materi-guru', component: MateriGuruView, meta: { requiresAuth: true, role: 'guru' } },
-
+  { path: '/student-materi', name: 'student-materi', component: MateriSiswaView, meta: { requiresAuth: true, role: 'siswa' } },
   // Tugas Guru
   { path: '/grading', name: 'grading', component: TeacherTugasView, meta: { requiresAuth: true, role: 'guru' } },
   { path: '/create-tugas', name: 'create-tugas', component: CreateTugasView, meta: { requiresAuth: true, role: 'guru' } },

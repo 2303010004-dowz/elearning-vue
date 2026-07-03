@@ -48,10 +48,11 @@
             <div 
               v-for="kelas in kelasList.slice(0, 3)" 
               :key="kelas.id" 
-              class="border-b border-gray-400 pb-4 last:border-0 last:pb-0"
+              class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm cursor-pointer hover:border-[#4A86A8] transition"
+              @click="router.push({ name: 'class-detail', params: { classId: kelas.id } })"
             >
-              <h4 class="font-bold text-lg text-gray-800">{{ kelas.nama_kelas }}</h4>
-              <p class="text-sm text-gray-600 mt-1">
+              <h4 class="font-bold text-[1.05rem] text-gray-800 line-clamp-1">{{ kelas.nama_kelas }}</h4>
+              <p class="text-sm text-gray-600 mt-2">
                 Kode Kelas: <span class="font-bold text-[#4A86A8]">{{ kelas.kode_kelas }}</span>
               </p>
             </div>
@@ -67,7 +68,7 @@
         <div class="bg-[#D9D9D9] rounded-2xl p-6 shadow-sm flex flex-col h-full">
           <h2 class="text-lg font-bold text-gray-800 mb-6">Tugas Terbaru</h2>
           
-          <div class="space-y-0 flex-grow">
+          <div class="space-y-4 flex-grow">
             <div v-if="tugasList.length === 0" class="text-sm text-gray-500 italic pb-2">
               Anda belum memberikan tugas apapun.
             </div>
@@ -75,18 +76,18 @@
             <div 
               v-for="tugas in tugasList.slice(0, 3)" 
               :key="tugas.id"
-              class="bg-transparent border-t border-gray-400 py-4 first:border-0 first:pt-0 last:pb-0 flex justify-between items-start"
+              class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex justify-between items-center hover:border-[#4A86A8] transition"
             >
               <div class="pr-4">
-                <h4 class="font-bold text-lg text-gray-800 line-clamp-1">{{ tugas.judul_tugas }}</h4>
-                <p class="text-sm text-gray-600 mt-1">
-                  Tenggat: <span class="font-medium text-gray-800">{{ formatTanggal(tugas.deadline) }}</span>
+                <h4 class="font-bold text-[1.05rem] text-gray-800 line-clamp-1">{{ tugas.judul_tugas }}</h4>
+                <p class="text-sm text-gray-600 mt-2">
+                  Tenggat: <span class="font-bold text-red-600">{{ formatTanggal(tugas.deadline) }}</span>
                 </p>
               </div>
               
               <button 
                 @click="router.push({ name: 'nilai-tugas', params: { id: tugas.id } })" 
-                class="bg-transparent border border-gray-600 text-sm px-4 py-1 rounded-lg hover:bg-gray-400 text-gray-800 font-medium transition shrink-0 mt-1"
+                class="bg-[#4A86A8] text-white text-sm px-4 py-2 rounded-lg hover:bg-[#3d718e] font-bold transition shrink-0"
               >
                 Nilai
               </button>
@@ -125,7 +126,7 @@ const totalTugas = ref(0)
 const fetchDashboardData = async () => {
   isLoading.value = true
   try {
-    const token = localStorage.getItem('token_jwt') // Disesuaikan
+    const token = localStorage.getItem('token_jwt')
     const config = { headers: { Authorization: `Bearer ${token}` } }
 
     const resKelas = await apiClient.get('/kelas', config)

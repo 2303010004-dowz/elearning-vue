@@ -117,7 +117,7 @@ const joinKelas = async () => {
   try {
     const token = localStorage.getItem('token_jwt')
     // Sesuai dengan route kodinganmu
-    const response = await apiClient.post('/kelas/joined', 
+    const response = await apiClient.post('/kelas/join', 
       { kode_kelas: kodeKelas.value.trim().toUpperCase() },
       { headers: { Authorization: `Bearer ${token}` } }
     )

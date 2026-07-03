@@ -133,9 +133,6 @@
           </div>
 
           <div v-else>
-            <button @click="tutupTugas" class="mb-5 flex items-center text-gray-600 hover:text-black font-semibold transition">
-              ← Kembali ke Daftar Tugas
-            </button>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8">
               <h1 class="text-2xl font-bold mb-2">{{ selectedTugas.judul_tugas }}</h1>
               <p class="text-sm text-gray-500 mb-4 font-medium">Batas Waktu: <span class="text-red-500">{{ formatTanggal(selectedTugas.deadline) || 'Tidak ada tenggat' }}</span></p>

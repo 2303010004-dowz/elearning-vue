@@ -4,38 +4,35 @@
       <h1 class="text-xl font-bold text-gray-800 mb-6">Edit Tugas</h1>
 
       <form @submit.prevent="updateTugas">
-        <!-- Pilih Kelas -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Kelas</label>
           <select v-model="form.kelas_id" class="w-full p-3 bg-gray-100 rounded-lg border border-gray-300" required>
             <option value="" disabled>Pilih Kelas</option>
-            <option v-for="c in classOptions" :key="c.id" :value="c.id">{{ c.name }}</option>
+            <option v-for="kelas in daftarKelas" :key="kelas.id" :value="kelas.id">
+              {{ kelas.nama_kelas }} {{ kelas.kode_kelas ? `- ${kelas.kode_kelas}` : '' }}
+            </option>
           </select>
         </div>
 
-        <!-- Judul -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Judul Tugas</label>
           <input v-model="form.judul_tugas" type="text" class="w-full p-3 bg-gray-100 rounded-lg border border-gray-300" required>
         </div>
 
-        <!-- Deskripsi -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tugas</label>
           <textarea v-model="form.deskripsi" rows="4" class="w-full p-3 bg-gray-100 rounded-lg border border-gray-300" required></textarea>
         </div>
 
-        <!-- Tenggat -->
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-1">Tenggat Waktu</label>
           <input type="date" v-model="form.deadline" class="w-full p-3 bg-gray-100 rounded-lg border border-gray-300" required>
         </div>
 
-        <!-- Tambahkan ini di dalam form, misalnya sebelum tombol Simpan -->
         <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Ganti Lampiran File (Opsional)</label>
-        <input type="file" @change="handleFileUpload" class="w-full p-2 bg-gray-100 rounded-lg border border-gray-300">
-        <p class="text-xs text-gray-500 mt-1">Format: doc, docx, pdf (Max 10MB)</p>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ganti Lampiran File (Opsional)</label>
+          <input type="file" @change="handleFileUpload" class="w-full p-2 bg-gray-100 rounded-lg border border-gray-300">
+          <p class="text-xs text-gray-500 mt-1">Format: doc, docx, pdf, zip (Max 10MB)</p>
         </div>
 
         <div class="flex gap-4">
@@ -59,20 +56,32 @@ const route = useRoute()
 const form = ref({ kelas_id: '', judul_tugas: '', deskripsi: '', deadline: '' })
 const fileBaru = ref(null) 
 
-const classOptions = ref([
-  { id: 1, name: 'Bahasa Indonesia - 7A' },
-  { id: 2, name: 'Bahasa Indonesia - 7B' },
-  { id: 3, name: 'Bahasa Indonesia - 7C' }
-])
+// Wadah untuk data kelas asli dari database
+const daftarKelas = ref([])
 
-// Tambahkan fungsi ini
+// Fungsi menangani file
 const handleFileUpload = (event) => {
   fileBaru.value = event.target.files[0]
 }
 
+// Fungsi mengambil daftar kelas milik guru
+const fetchDaftarKelas = async () => {
+  try {
+    const token = localStorage.getItem('token_jwt')
+    const response = await apiClient.get('/kelas', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    // Simpan ke variabel daftarKelas
+    daftarKelas.value = response.data.data || response.data || []
+  } catch (error) {
+    console.error('Gagal mengambil daftar kelas:', error)
+  }
+}
+
+// Fungsi mengambil detail tugas yang mau diedit
 const fetchDetailTugas = async () => {
   try {
-    const token = localStorage.getItem('token_jwt') // 2. Gunakan token_jwt
+    const token = localStorage.getItem('token_jwt') 
     const response = await apiClient.get(`/tugas/${route.params.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -82,6 +91,7 @@ const fetchDetailTugas = async () => {
   }
 }
 
+// Fungsi menyimpan perubahan
 const updateTugas = async () => {
   const formData = new FormData();
   formData.append('kelas_id', form.value.kelas_id);
@@ -102,12 +112,16 @@ const updateTugas = async () => {
       }
     });
     Swal.fire('Berhasil!', 'Tugas diperbarui.', 'success');
-    router.push({ name: 'grading' });
+    router.push({ name: 'grading' }); // Pastikan nama rute ini benar di router-mu
   } catch (error) {
     console.error(error.response?.data);
     Swal.fire('Gagal!', error.response?.data?.message || 'Terjadi kesalahan.', 'error');
   }
 }
 
-onMounted(fetchDetailTugas)
+// Jalankan kedua fungsi (ambil kelas & ambil detail tugas) saat halaman dimuat
+onMounted(() => {
+  fetchDaftarKelas()
+  fetchDetailTugas()
+})
 </script>
